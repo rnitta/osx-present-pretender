@@ -1,7 +1,7 @@
 ![screen shot](ss.png)
 
 # What is this
-Assume you are remote worker. When you want to sleep or go outside or do something other than work during working hours, doing them has risks of disappearing Slack active mark.  
+Assume you are remote worker. When you want to sleep or go outside or do something other than work during working hours, doing them has risks of deactivating Slack presence mark.  
 This tool enable slack presence fraud by an analog way;  disabling sleep and firing mouse movement event.  
 
 # Presence Detection of Slack App
