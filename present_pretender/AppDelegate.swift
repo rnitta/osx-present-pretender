@@ -14,6 +14,7 @@ import IOKit.pwr_mgt
 class AppDelegate: NSObject, NSApplicationDelegate {
     @IBOutlet weak var menu: MenuBarIcon!
     let statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
+    var menuBarHeight: Optional<CGFloat> { NSApplication.shared.mainMenu?.menuBarHeight }
     var latestMovedAt = NSDate()
     var moveEventTimer = Timer()
     var threasholdMinutes = 30
@@ -22,7 +23,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menu.initialize()
         
         // set icon
-        if let menuBarHeight: CGFloat = NSApplication.shared.mainMenu?.menuBarHeight {
+        if let menuBarHeight = menuBarHeight {
             if let icon = NSImage(named: "Black") {
                 icon.size = NSSize(width: menuBarHeight, height: menuBarHeight)
                 statusItem.button?.image = icon
@@ -46,6 +47,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         set(v) {
             if _autoMoveEnabled == v {return}
             _autoMoveEnabled = v
+            updateIcon()
             if v {
                 // sending mouse event programatically will require "accessibility permissions" (probably with Mojave and later), and the prompt screen will appear once an event sent.
                 sendMoveMouseEvent()
@@ -62,7 +64,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     // check if the time elapsed from latest activity exceed the threashold.
     @objc func checkShouldMove(_ sender:Timer) {
         let diff = Int(NSDate().timeIntervalSince(latestMovedAt as Date))
-        print(diff)
         if diff > threasholdMinutes * 60 {
             sendMoveMouseEvent()
         }
@@ -91,6 +92,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         set(v) {
             if _isSleepDisabled == v { return }
             _isSleepDisabled = v
+            updateIcon()
             if v {
                 ioret = IOPMAssertionCreateWithName( kIOPMAssertionTypeNoDisplaySleep as CFString,
                 IOPMAssertionLevel(kIOPMAssertionLevelOn),
@@ -103,7 +105,39 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
-
-    
+    func updateIcon() {
+        let statusEnum: IsOn = {
+            switch (autoMoveEnabled, isSleepDisabled) {
+        case (true, true):
+            return IsOn.Both
+        case (false, false):
+            return IsOn.None
+        default:
+            return IsOn.Partially
+            }
+        }()
+        
+        if let menuBarHeight = menuBarHeight {
+            let iconName: String = {
+                switch statusEnum {
+                case .Both:
+                    return "Green"
+                case .Partially:
+                    return "Orange"
+                case .None:
+                    return "Black"
+                }
+            }()
+            if let icon = NSImage(named: iconName) {
+                icon.size = NSSize(width: menuBarHeight, height: menuBarHeight)
+                statusItem.button?.image = icon
+            }
+        }
+    }
 }
 
+enum IsOn {
+    case None
+    case Partially
+    case Both
+}

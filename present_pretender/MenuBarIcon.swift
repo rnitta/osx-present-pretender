@@ -55,13 +55,23 @@ Every \(sender.intValue) Minutes
         self.addItem(menuItem1)
 
         self.addItem(NSMenuItem.separator())
-
         
         let menuItem2 = NSMenuItem()
         menuItem2.title = "Auto Move Pointer"
         menuItem2.view = autoMovePointerView
         autoMoveEnabled = false
         self.addItem(menuItem2)
+        
+        self.addItem(NSMenuItem.separator())
+
+        let menuItemQ = NSMenuItem(title: "Quit", action: #selector(quitThisApp(_:)), keyEquivalent: "q")
+        menuItemQ.target = self
+        self.addItem(menuItemQ)
     }
+    
+    @objc func quitThisApp(_ sender: NSMenuItem) {
+        NSApplication.shared.terminate(self)
+    }
+    
         
 }
